@@ -48,9 +48,7 @@ func main() {
 	userRepo := repository.NewUserService(db)
 	workRepo := repository.NewWorkService(db, userRepo)
 	paymentRepo := repository.NewPaymentService(db)
-	rppClient := &RPCClient{
-		Url: os.Getenv("RPC_URL"),
-	}
+	rppClient := NewRPCClient(os.Getenv("RPC_URL"))
 
 	// Do all of this within a transaction
 	err = db.Transaction(func(tx *gorm.DB) error {

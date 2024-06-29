@@ -4,15 +4,26 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"time"
 
 	"github.com/bananocoin/boompow/libs/models"
 	"k8s.io/klog/v2"
 )
 
 type RPCClient struct {
-	Url string
+	Url        string
+	httpClient *http.Client
+}
+
+func NewRPCClient(url string) *RPCClient {
+	return &RPCClient{
+		Url: url,
+		httpClient: &http.Client{
+			Timeout: time.Second * 30, // Set a timeout for all requests
+		},
+	}
 }
 
 type SendResponse struct {
@@ -23,18 +34,24 @@ type SendResponse struct {
 func (client RPCClient) makeRequest(request interface{}) ([]byte, error) {
 	requestBody, _ := json.Marshal(request)
 	// HTTP post
-	resp, err := http.Post(client.Url, "application/json", bytes.NewBuffer(requestBody))
+	resp, err := client.httpClient.Post(client.Url, "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		klog.Errorf("Error making RPC request %s", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 	// Try to decode+deserialize
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		klog.Errorf("Error decoding response body %s", err)
 		return nil, err
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		klog.Errorf("Received non-200 response: %s", body)
+		return nil, errors.New("non-200 response received")
+	}
+
 	return body, nil
 }
 
