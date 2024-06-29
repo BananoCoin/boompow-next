@@ -49,21 +49,15 @@ spec:
                   name: boompow
                   key: smtp_password
             - name: DB_HOST
-              value: postgres.kubegres
+              value: pg-boompow.boompow-next
             - name: DB_PORT
               value: '5432'
             - name: DB_SSLMODE
               value: disable
             - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: boompow
-                  key: db_name
+              value: postgres
             - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: boompow
-                  key: db_user
+              value: postgres
             - name: DB_PASS
               valueFrom:
                 secretKeyRef:
@@ -108,6 +102,6 @@ spec:
             - name: ENVIRONMENT
               value: production
             - name: BANANO_WS_URL
-              value: ws://10.255.0.1:7074
+              value: ws://10.4.0.1:7074
             - name: NANO_WS_URL
-              value: ws://10.1.0.1:7078
+              value: ws://10.7.0.1:7078
